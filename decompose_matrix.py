@@ -5,7 +5,6 @@ class Z_sqrt_2_i:
 		#values[0] = constant factor, values[1] = imaginary factor, values[2] = sqrt_factor, values[3] = imaginary and square root factor
 		self.values = [a,b,c,d,n]
 
-
 	def change_exponent(self, _exponent):
 		if (_exponent > self.values[4]):
 			raise Exception ("Cannot change n for 1/2^n in front of integer ring without breaking the integer property.")
@@ -121,7 +120,6 @@ class D_w:
 		return "Ring of polynomials with the 8th roots of unity"
 
 class Residue:
-	self.residue_array = []
 	def __init__ (value):
 		self.residue_array = [value.values[3] % 2, value.values[2] % 2, value.values[1] % 2, value.values[0] % 2]
 
@@ -153,6 +151,8 @@ class Residue:
 	def subtract(self, residue2):
 		self.add(residue2)
 	def mul_sqrt_2(self):
+
+		#Maybe use a dictionary for these?
 		if self.values[0] == 1:
 			if self.values[1] == 1:
 				if self.values[2] == 1:
@@ -348,7 +348,7 @@ class Residue:
 						vals[3] = 0		
 		return Residue(vals)
 	def equals(self, res2):
-		return (self.residue_array[0] == res2.residue_array[0]) && (self.residue_array[1] == res2.residue_array[1]) && (self.residue_array[2] == res2.residue_array[2]) && (self.residue_array[3] == res2.residue_array[3])
+		return (self.residue_array[0] == res2.residue_array[0]) and (self.residue_array[1] == res2.residue_array[1]) and (self.residue_array[2] == res2.residue_array[2]) and (self.residue_array[3] == res2.residue_array[3])
 class Matrix:
 	#k is the 1/sqrt(2)^k factor in front of the matrix given.
 	def __init__ (arr, k):
@@ -378,9 +378,9 @@ class Matrix:
 	def k_res(self, k):
 		if (k < self.exp):
 			raise Exception ("Cannot take residue of matrix with a 1/sqrt(2) factor")
-		else if (k == self.exp):
+		elif (k == self.exp):
 			return self.createResidue()
-		else if (k == self.exp + 1):
+		elif (k == self.exp + 1):
 			res = self.createResidue()
 			res_arr = res.residue_array
 			for row in res_arr:
@@ -398,8 +398,46 @@ class Residue_Matrix:
 	def __init__(matrix_array, exp):
 		self.residue_array = matrix_array
 
+	def getColumn(self, colNum):
+		col = []
+		for row in self.matrix_array:
+			col += [row[colNum]]
+		return col
 
+#Takes in a column of the matrix to decompose and returns the gates required to decompose it. 
+def col_decomp(col):
+	gates = ""
+	col_norm = []
+	for res in col:
+		col_norm += [res.norm()]
+	i = 0
+	while (i < len(col)):
+		j = i
+		while(j < len(col) - 1):
+			j += 1
+			if (col_norm[i].equals(col_norm[j])):
+				if(col_norm[i].equals(Reisdue([0,0,0,0]))):
+					continue
+				elif (col_norm[i].equals(Residue([1,0,1,0]))):
+					#WRITE ALGORITHM HERE
+					k = 0
+					while(k < 4):
+						if (col[i].rotate(k).equals(col[j])):
+							gates = "HT^" + str(k) + gates
+						k += 1
+					break
+				elif (col_norm[i].equals(Residue([0,0,0,1]))):
+					#WRITE ALGORITHM HERE
+					gates = "Haddamard" + gates
+					break
+				else:
+					raise Exception("The norms were calculated wrong")
 
+		else:
+			i += 1
+			continue
+		break
+	return gates
 
 #Tests
 
@@ -414,6 +452,16 @@ ring2.reduce()
 ring2 = ring2.convert()
 print(ring2.values)
 
+
+array = [[Z_sqrt_2_i([1,0,0,0,0]), Z_sqrt_2_i([1,0,0,0,0]), Z_sqrt_2_i([0,0,0,0,0]), Z_sqrt_2_i[0,0,0,0,0]],
+ [Z_sqrt_2_i([1,0,0,0,0]), Z_sqrt_2_i([-1,0,0,0,0]), Z_sqrt_2_i([0,0,0,0,0]), Z_sqrt_2_i([0,0,0,0,0])],
+  [Z_sqrt_2_i([0,0,0,0,0]), Z_sqrt_2_i([0,0,0,0,0]), Z_sqrt_2_i([1,0,0,0,0]), Z_sqrt_2_i([-1,0,0,0,0])],
+   [Z_sqrt_2_i([0,0,0,0,0]), Z_sqrt_2_i([0,0,0,0,0]), Z_sqrt_2_i([1,0,0,0,0]), Z_sqrt_2_i([1,0,0,0,0])]]
+
+matrix = Matrix(array, 1)
+res = matrix.createResidue()
+col = res.getColumn(0)
+print col_decomp(col)
 
 
 
